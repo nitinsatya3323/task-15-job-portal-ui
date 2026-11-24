@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Portal</title>
+<style>
+:root{--bg:#0b0f17;--panel:#121826;--panel2:#182033;--line:#243049;--text:#e6ebf5;--muted:#8b97b1;--accent:#6c8cff;--accent2:#22d3a6;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.wrap{max-width:1250px;margin:auto;padding:0 20px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.logo{font-weight:700;font-size:1.2rem}.logo span{color:var(--accent)}
+.hero{padding:26px 0 22px}
+.hero h1{font-size:1.7rem;margin-bottom:4px}
+.hero p{color:var(--muted);margin-bottom:16px}
+.searchbar{display:flex;gap:10px;flex-wrap:wrap}
+input,select{background:var(--bg);border:1px solid var(--line);color:var(--text);padding:11px 13px;border-radius:10px;font:inherit;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.searchbar input{flex:2;min-width:200px}
+.searchbar select{flex:1;min-width:150px}
+.btn{border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font:inherit;background:var(--accent);color:#fff}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+.layout{display:grid;grid-template-columns:230px 1fr;gap:20px;padding:22px 0 50px}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;align-self:start;position:sticky;top:14px}
+aside h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin:14px 0 8px}
+aside h4:first-child{margin-top:0}
+.chk{display:flex;align-items:center;gap:8px;font-size:.92rem;padding:3px 0;cursor:pointer}
+.chk input{width:auto;accent-color:var(--accent)}
+input[type=range]{width:100%;padding:0;accent-color:var(--accent)}
+.rangeval{font-size:.88rem;color:var(--accent2);font-weight:600}
+.content{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:18px;min-width:0}
+.listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:var(--muted);font-size:.88rem;grid-column:1/-1}
+.listhead select{padding:7px 10px;font-size:.85rem}
+.list{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 120px);overflow:auto;padding-right:4px}
+.job{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px;cursor:pointer;transition:.15s;display:flex;gap:12px}
+.job:hover{border-color:var(--accent)}
+.job.active{border-color:var(--accent);background:var(--panel2)}
+.logoBox{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-weight:700;color:#fff;flex-shrink:0}
+.job h3{font-size:1rem}
+.co{color:var(--muted);font-size:.86rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{background:var(--bg);border:1px solid var(--line);color:var(--muted);font-size:.74rem;padding:2px 9px;border-radius:99px}
+.tag.g{color:var(--accent2)}
+.sal{color:var(--accent2);font-weight:600;font-size:.88rem;margin-top:6px}
+.posted{color:var(--muted);font-size:.76rem;margin-left:auto;white-space:nowrap}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;align-self:start;position:sticky;top:14px;max-height:calc(100vh - 120px);overflow:auto}
+.detail h2{font-size:1.4rem}
+.dhead{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.dhead .logoBox{width:56px;height:56px;font-size:1.3rem}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}
+.fact{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+.fact small{color:var(--muted);display:block;font-size:.74rem}
+.fact b{font-size:.93rem}
+.detail h4{color:var(--accent);margin:18px 0 6px}
+.detail ul{padding-left:20px;color:var(--muted)}
+.detail p{color:var(--muted)}
+.back{display:none;margin-bottom:12px}
+.empty{text-align:center;color:var(--muted);padding:50px 10px;border:1px dashed var(--line);border-radius:var(--radius)}
+.filterToggle{display:none}
+@media(max-width:1000px){
+  .layout{grid-template-columns:1fr}
+  aside{position:static;display:none}
+  aside.open{display:block}
+  .filterToggle{display:inline-block}
+  .content{grid-template-columns:1fr}
+  .list{max-height:none}
+  .detail{display:none;position:fixed;inset:0;z-index:40;max-height:none;border-radius:0;border:none}
+  .detail.show{display:block}
+  .back{display:inline-block}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top"><div class="logo">Job<span>Nest</span></div><span style="color:var(--muted);font-size:.9rem" id="totalLabel"></span></div>
+    <div class="hero">
+      <h1>Find your next job</h1>
+      <p>Search thousands of roles by title, skill, company or location.</p>
+      <div class="searchbar">
+        <input id="q" type="search" placeholder="Job title, skill or company">
+        <select id="loc"></select>
+        <button class="btn ghost filterToggle" id="ftBtn">Filters</button>
+        <button class="btn" id="goBtn">Search</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <aside id="filters">
+      <h4>Job type</h4><div id="typeBox"></div>
+      <h4>Experience</h4><div id="expBox"></div>
+      <h4>Work mode</h4><div id="modeBox"></div>
+      <h4>Min salary (LPA)</h4>
+      <input type="range" id="sal" min="0" max="30" step="1" value="0">
+      <div class="rangeval" id="salVal">Any</div>
+      <button class="btn ghost" id="clear" style="width:100%;margin-top:18px">Clear all filters</button>
+    </aside>
+
+    <div class="content">
+      <div class="listhead">
+        <span id="count"></span>
+        <select id="sort">
+          <option value="new">Newest first</option>
+          <option value="salary">Highest salary</option>
+          <option value="title">Title A–Z</option>
+        </select>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="detail" id="detail"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const JOBS=[
+{id:1,title:"Frontend Developer",company:"PixelWorks",loc:"Bengaluru",type:"Full-time",exp:"1-3 years",mode:"Hybrid",min:6,max:10,days:1,skills:["HTML","CSS","JavaScript","React"],about:"Join our product team to build fast, accessible interfaces used by thousands of customers daily.",resp:["Build reusable UI components","Collaborate with designers and backend engineers","Optimise pages for performance"],req:["2+ years with JavaScript and React","Strong CSS and responsive design skills","Experience with Git workflows"],perks:["Health insurance","Flexible hours","Learning budget"]},
+{id:2,title:"Java Backend Engineer",company:"CoreStack Systems",loc:"Chennai",type:"Full-time",exp:"3-5 years",mode:"On-site",min:12,max:18,days:2,skills:["Java","Spring Boot","MySQL","REST"],about:"Design and scale backend services powering enterprise banking platforms.",resp:["Develop REST APIs","Optimise database queries","Mentor junior developers"],req:["3+ years of Java","Spring Boot and microservices","SQL expertise"],perks:["Performance bonus","Health cover","Work-from-home Fridays"]},
+{id:3,title:"Data Analyst",company:"InsightIQ",loc:"Pune",type:"Full-time",exp:"0-1 years",mode:"Hybrid",min:4,max:7,days:3,skills:["SQL","Excel","Power BI","Python"],about:"Turn business data into dashboards and insights that guide leadership decisions.",resp:["Write SQL queries","Build dashboards","Present insights to stakeholders"],req:["SQL and Excel proficiency","Analytical thinking","Good communication"],perks:["Mentorship","Certifications sponsored","Meal coupons"]},
+{id:4,title:"UI/UX Designer",company:"Studio Nine",loc:"Remote",type:"Contract",exp:"1-3 years",mode:"Remote",min:5,max:9,days:4,skills:["Figma","Prototyping","User Research"],about:"Create delightful experiences for mobile and web products across industries.",resp:["Design wireframes and prototypes","Run usability tests","Maintain design system"],req:["Strong Figma skills","Portfolio of shipped work","Understanding of UX principles"],perks:["Remote-first","Flexible schedule","Equipment allowance"]},
+{id:5,title:"Machine Learning Engineer",company:"NeuraLabs",loc:"Hyderabad",type:"Full-time",exp:"3-5 years",mode:"Hybrid",min:18,max:28,days:2,skills:["Python","TensorFlow","MLOps","Statistics"],about:"Build and deploy ML models that power recommendations for millions of users.",resp:["Train and evaluate models","Deploy models to production","Monitor model drift"],req:["3+ years in ML","Strong Python","Experience with cloud ML tooling"],perks:["Stock options","Research time","Conference budget"]},
+{id:6,title:"Cybersecurity Analyst",company:"SafeNet Labs",loc:"Bengaluru",type:"Full-time",exp:"1-3 years",mode:"On-site",min:8,max:14,days:5,skills:["Networking","SIEM","Linux","Incident Response"],about:"Protect client infrastructure by monitoring, detecting and responding to threats.",resp:["Monitor security alerts","Run vulnerability assessments","Write incident reports"],req:["Networking fundamentals","Linux administration","Security certifications a plus"],perks:["Certification support","Night-shift allowance","Health cover"]},
+{id:7,title:"Digital Marketing Executive",company:"BrandBloom",loc:"Mumbai",type:"Full-time",exp:"1-3 years",mode:"Hybrid",min:4,max:8,days:6,skills:["SEO","Google Ads","Analytics","Content"],about:"Plan and run performance campaigns for fast-growing consumer brands.",resp:["Manage ad campaigns","Track and report analytics","Optimise SEO"],req:["Experience with Google Ads","Analytical mindset","Excellent writing"],perks:["Performance incentives","Team outings","Flexible hours"]},
+{id:8,title:"DevOps Engineer",company:"SkyLayer",loc:"Remote",type:"Full-time",exp:"3-5 years",mode:"Remote",min:14,max:22,days:1,skills:["AWS","Docker","Kubernetes","CI/CD"],about:"Own the cloud infrastructure and delivery pipelines for a global SaaS platform.",resp:["Maintain CI/CD pipelines","Manage Kubernetes clusters","Improve observability"],req:["3+ years DevOps experience","Strong Linux and scripting","Cloud certifications preferred"],perks:["Remote-first","Home office stipend","Annual retreat"]},
+{id:9,title:"Android Developer",company:"AppForge",loc:"Chennai",type:"Full-time",exp:"1-3 years",mode:"On-site",min:7,max:12,days:7,skills:["Kotlin","Android","Firebase","MVVM"],about:"Build and ship features for a consumer app with over a million downloads.",resp:["Develop app features","Fix crashes and performance issues","Write unit tests"],req:["Kotlin proficiency","Knowledge of MVVM","Published app a plus"],perks:["Health insurance","Free lunch","Learning budget"]},
+{id:10,title:"Content Writer",company:"WordCraft Media",loc:"Remote",type:"Part-time",exp:"0-1 years",mode:"Remote",min:2,max:4,days:3,skills:["Writing","Research","Editing","SEO"],about:"Write engaging articles, blogs and newsletters for technology and education clients.",resp:["Research and write articles","Proofread drafts","Follow brand voice"],req:["Excellent English","Writing samples","Ability to meet deadlines"],perks:["Flexible hours","Work from anywhere","Byline credit"]},
+{id:11,title:"Full Stack Developer",company:"LaunchPad Tech",loc:"Coimbatore",type:"Full-time",exp:"3-5 years",mode:"Hybrid",min:12,max:20,days:4,skills:["Node.js","React","MongoDB","AWS"],about:"Deliver end-to-end features for a growing SaaS product used by startups worldwide.",resp:["Build APIs and UI","Write automated tests","Participate in architecture decisions"],req:["3+ years full-stack experience","Node.js and React","Database design skills"],perks:["Stock options","Health cover","Flexible hours"]},
+{id:12,title:"Software Engineering Intern",company:"CoreStack Systems",loc:"Chennai",type:"Internship",exp:"0-1 years",mode:"On-site",min:2,max:3,days:2,skills:["Java","DSA","SQL"],about:"Learn real-world engineering by working on production modules with a mentor.",resp:["Fix bugs and write small features","Write unit tests","Attend code reviews"],req:["Strong programming basics","Data structures knowledge","Eagerness to learn"],perks:["Mentorship","Pre-placement offer chance","Certificate"]},
+{id:13,title:"Product Manager",company:"InsightIQ",loc:"Bengaluru",type:"Full-time",exp:"5+ years",mode:"Hybrid",min:25,max:30,days:8,skills:["Roadmapping","Analytics","Stakeholder Mgmt"],about:"Lead product strategy for our analytics suite from discovery to launch.",resp:["Define product roadmap","Work with engineering and design","Analyse usage metrics"],req:["5+ years in product","Data-driven decision making","Strong communication"],perks:["Stock options","Premium health cover","Leadership training"]},
+{id:14,title:"Graphic Designer",company:"Studio Nine",loc:"Mumbai",type:"Contract",exp:"1-3 years",mode:"On-site",min:4,max:7,days:9,skills:["Photoshop","Illustrator","Branding"],about:"Create visuals for social, print and brand campaigns across creative clients.",resp:["Design posters and creatives","Prepare brand kits","Revise based on feedback"],req:["Adobe suite proficiency","Portfolio","Time management"],perks:["Creative freedom","Flexible hours","Team outings"]}
+];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COLORS=["#6c8cff","#22b8a0","#e0762b","#b05cf0","#e0508a","#3b9be0","#c9a227"];
+const color=c=>COLORS[[...c].reduce((a,ch)=>a+ch.charCodeAt(0),0)%COLORS.length];
+const sal=j=>`₹${j.min}–${j.max} LPA`;
+const ago=d=>d<=1?"Today":d<7?`${d} days ago`:`${Math.floor(d/7)} week${d>=14?"s":""} ago`;
+const uniq=k=>[...new Set(JOBS.map(j=>j[k]))];
+
+/* build filters */
+$("loc").innerHTML=`<option value="">All locations</option>`+uniq("loc").map(l=>`<option>${esc(l)}</option>`).join("");
+const groups={type:"typeBox",exp:"expBox",mode:"modeBox"};
+Object.entries(groups).forEach(([k,box])=>{
+  $(box).innerHTML=uniq(k).map(v=>`<label class="chk"><input type="checkbox" data-k="${k}" value="${esc(v)}"> ${esc(v)}</label>`).join("");
+});
+
+let selected=null, current=[];
+
+function checked(k){return [...document.querySelectorAll(`input[data-k="${k}"]:checked`)].map(x=>x.value)}
+
+function apply(){
+  const q=$("q").value.trim().toLowerCase(), loc=$("loc").value, minS=+$("sal").value;
+  const t=checked("type"), e=checked("exp"), m=checked("mode");
+  $("salVal").textContent=minS?`₹${minS} LPA and above`:"Any";
+  current=JOBS.filter(j=>
+    (!q||(j.title+" "+j.company+" "+j.skills.join(" ")).toLowerCase().includes(q))&&
+    (!loc||j.loc===loc)&&(!t.length||t.includes(j.type))&&
+    (!e.length||e.includes(j.exp))&&(!m.length||m.includes(j.mode))&&j.max>=minS);
+  const s=$("sort").value;
+  if(s==="salary")current.sort((a,b)=>b.max-a.max);
+  else if(s==="title")current.sort((a,b)=>a.title.localeCompare(b.title));
+  else current.sort((a,b)=>a.days-b.days);
+  $("count").textContent=`${current.length} job${current.length!==1?"s":""} found`;
+  $("totalLabel").textContent=`${JOBS.length} openings`;
+  if(!current.find(j=>j.id===selected)) selected=current.length?current[0].id:null;
+  renderList(); renderDetail(false);
+}
+
+function renderList(){
+  $("list").innerHTML=current.length?current.map(j=>`
+    <div class="job ${j.id===selected?"active":""}" data-id="${j.id}">
+      <div class="logoBox" style="background:${color(j.company)}">${esc(j.company[0])}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:8px"><h3>${esc(j.title)}</h3><span class="posted">${ago(j.days)}</span></div>
+        <div class="co">${esc(j.company)} · ${esc(j.loc)}</div>
+        <div class="sal">${sal(j)}</div>
+        <div class="tags"><span class="tag g">${esc(j.type)}</span><span class="tag">${esc(j.mode)}</span><span class="tag">${esc(j.exp)}</span></div>
+      </div>
+    </div>`).join(""):`<div class="empty">No jobs match your search.<br>Try removing some filters.</div>`;
+}
+
+function renderDetail(openMobile){
+  const d=$("detail"), j=JOBS.find(x=>x.id===selected);
+  if(!j){d.innerHTML=`<div class="empty">Select a job to see its details.</div>`;d.classList.remove("show");return}
+  d.innerHTML=`
+    <button class="btn ghost back" id="backBtn">← Back to jobs</button>
+    <div class="dhead">
+      <div class="logoBox" style="background:${color(j.company)}">${esc(j.company[0])}</div>
+      <div><h2>${esc(j.title)}</h2><div class="co">${esc(j.company)} · ${esc(j.loc)}</div></div>
+    </div>
+    <div class="facts">
+      <div class="fact"><small>Salary</small><b>${sal(j)}</b></div>
+      <div class="fact"><small>Job type</small><b>${esc(j.type)}</b></div>
+      <div class="fact"><small>Experience</small><b>${esc(j.exp)}</b></div>
+      <div class="fact"><small>Work mode</small><b>${esc(j.mode)}</b></div>
+      <div class="fact"><small>Posted</small><b>${ago(j.days)}</b></div>
+    </div>
+    <h4>About the job</h4><p>${esc(j.about)}</p>
+    <h4>Responsibilities</h4><ul>${j.resp.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h4>Requirements</h4><ul>${j.req.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h4>Skills</h4><div class="tags">${j.skills.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}</div>
+    <h4>Perks &amp; benefits</h4><ul>${j.perks.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  if(openMobile){d.classList.add("show");d.scrollTop=0}
+}
+
+/* events */
+$("list").addEventListener("click",e=>{
+  const c=e.target.closest(".job"); if(!c)return;
+  selected=+c.dataset.id; renderList(); renderDetail(true);
+});
+$("detail").addEventListener("click",e=>{ if(e.target.id==="backBtn") $("detail").classList.remove("show"); });
+$("q").addEventListener("input",apply);
+$("goBtn").addEventListener("click",apply);
+$("q").addEventListener("keydown",e=>{if(e.key==="Enter")apply()});
+["loc","sort","sal"].forEach(id=>$(id).addEventListener("input",apply));
+document.querySelectorAll("aside input[type=checkbox]").forEach(c=>c.addEventListener("change",apply));
+$("clear").addEventListener("click",()=>{
+  $("q").value="";$("loc").value="";$("sal").value=0;
+  document.querySelectorAll("aside input[type=checkbox]").forEach(c=>c.checked=false);
+  apply();
+});
+$("ftBtn").addEventListener("click",()=>$("filters").classList.toggle("open"));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("detail").classList.remove("show")});
+
+apply();
+</script>
+</body>
+</html>
